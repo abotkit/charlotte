@@ -5,3 +5,5 @@
 !README.md
 !requirements.txt
 !app.py
+tests/
+rasa/
