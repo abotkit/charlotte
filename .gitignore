@@ -1,11 +1,11 @@
+.idea/
+__pycache__/
+*.pyc
+tests/
+rasa/
 !.gitignore
 !Dockerfile
 !LICENSE
 !README.md
 !requirements.txt
 !app.py
-.idea/
-__pycache__/
-*.pyc
-tests/
-rasa/
