@@ -14,12 +14,34 @@ root = os.path.dirname(os.path.abspath(__file__))
 CORS(app)
 
 data_handler = handlers.YAMLDataHandler()
-rasa_handler = handlers.RasaAbstraction(data_handler=data_handler)
+config_handler = handlers.ConfigHandler()
+rasa_handler = handlers.RasaAbstraction(
+  data_handler=data_handler,
+  config_handler=config_handler
+)
 
 
 @app.route('/alive')
 def alive():
   return '', status.HTTP_200_OK
+
+
+@app.route('/rasa-alive')
+def rasa_server_alive():
+  try:
+    response = requests.get(rasa_handler.config_handler.get_rasa_server_url())
+    return '', status.HTTP_200_OK
+  except requests.exceptions.ConnectionError as e:
+    return 'rasa server not available', status.HTTP_503_SERVICE_UNAVAILABLE
+
+
+@app.route('/rasa-action-alive')
+def rasa_action_server_alive():
+  try:
+    response = requests.get(rasa_handler.config_handler.get_rasa_action_server_url())
+    return '', status.HTTP_200_OK
+  except requests.exceptions.ConnectionError as e:
+    return 'rasa action server not available', status.HTTP_503_SERVICE_UNAVAILABLE
 
 
 @app.route('/init')
@@ -79,15 +101,9 @@ def start_rasa_server():
       try:
         os.chdir(os.path.join(root, 'rasa'))
         subprocess.Popen(
-          ['rasa', 'run', '--enable-api', '--cors', '"*"', '-p', str(os.getenv('ABOTKIT_RASA_SERVER_PORT', 5005))],
+          ['rasa', 'run', '--enable-api', '--cors', '"*"', '-p', str(rasa_handler.config_handler.get_rasa_server_port())],
           shell=True
         )
-        rasa_server_unavailable = True
-        while rasa_server_unavailable:
-          rasa_server_unavailable = helpers.check_server(
-            f"http://127.0.0.1:{os.getenv('ABOTKIT_RASA_SERVER_PORT', 5005)}",
-            rasa_server_unavailable
-          )
         return 'successfully startet rasa server', status.HTTP_200_OK
       except Exception as e:
         print(str(e)) # replace with logger
@@ -106,15 +122,9 @@ def start_rasa_action_server():
       try:
         os.chdir(os.path.join(root, 'rasa'))
         subprocess.Popen(
-          ['rasa', 'run', 'actions', '--cors', '"*"', '-p', str(os.getenv('ABOTKIT_RASA_ACTION_SERVER_PORT', 5055))],
+          ['rasa', 'run', 'actions', '--cors', '"*"', '-p', str(rasa_handler.config_handler.get_rasa_action_server_port())],
           shell=True
         )
-        rasa_action_server_unavailable = True
-        while rasa_action_server_unavailable:
-          rasa_action_server_unavailable = helpers.check_server(
-            f"http://127.0.0.1:{os.getenv('ABOTKIT_RASA_ACTION_SERVER_PORT', 5055)}",
-            rasa_action_server_unavailable
-          )
         return 'successfully startet rasa action server', status.HTTP_200_OK
       except Exception as e:
         print(str(e)) # replace with logger
@@ -126,7 +136,24 @@ def start_rasa_action_server():
     return 'failed to start rasa action server', status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
+@app.route('/handle', methods=["POST"])
+def handle():
+  data = dict(
+    message=request.json['query'],
+    sender=request.json['identifier']
+  )
+  try:
+    r = requests.post(rasa_handler.config_handler.get_rasa_webhook(), data=json.dumps(data))
+    if r.status_code == 200:
+      return jsonify(r.json())
+    else:
+      print(r.status_code)
+      return 'Problems handling the message', status.HTTP_500_INTERNAL_SERVER_ERROR
+  except Exception as e:
+    print("SENDER EXEC", str(e))
+    return 'failed to handle message', status.HTTP_500_INTERNAL_SERVER_ERROR
+
 
 if __name__ == '__main__':
-  port = os.getenv('ABOTKIT_CHARLOTTE_PORT', 3080)
+  port = rasa_handler.config_handler.get_abotkit_charlotte_port()
   app.run(debug=True, port=port)
