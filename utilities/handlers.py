@@ -41,3 +41,5 @@ class RasaAbstraction():
             parsed_responses[response] = [elem['text'] for elem in elements if 'text' in elem]
             #parsed_responses[response] = [v for k, v in d.items() if k == 'text' for d in elements]
         return parsed_responses
+
+

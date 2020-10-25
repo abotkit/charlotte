@@ -1,6 +1,7 @@
 import requests
 import time
 
+
 def parse_intent_examples(examples: str):
     return [x.replace("- ", "") for x in examples.splitlines()]
 
@@ -12,3 +13,4 @@ def check_server(url, server_unavailable):
   except requests.exceptions.ConnectionError as e:
     time.sleep(1)
   return server_unavailable
+
