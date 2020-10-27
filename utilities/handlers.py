@@ -1,7 +1,55 @@
 from abc import ABC, abstractmethod
 import yaml
+import os
 
 from utilities import helpers
+
+
+class IConfigHandler(ABC):
+    @abstractmethod
+    def get_rasa_server_port(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_rasa_action_server_port(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_rasa_server_url(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_rasa_action_server_url(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_rasa_webhook(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_abotkit_charlotte_port(self):
+        raise NotImplementedError
+
+
+class ConfigHandler(IConfigHandler):
+
+    def get_abotkit_charlotte_port(self):
+        return os.getenv('ABOTKIT_CHARLOTTE_PORT', 3080)
+
+    def get_rasa_server_port(self):
+        return os.getenv('ABOTKIT_RASA_SERVER_PORT', 5005)
+
+    def get_rasa_action_server_port(self):
+        return os.getenv('ABOTKIT_RASA_ACTION_SERVER_PORT', 5055)
+
+    def get_rasa_action_server_url(self):
+        return f"{os.getenv('ABOTKIT_RASA_ACTION_SERVER_HOST', 'http://127.0.0.1')}:{os.getenv('ABOTKIT_RASA_ACTION_SERVER_PORT', 5055)}"
+
+    def get_rasa_server_url(self):
+        return f"{os.getenv('ABOTKIT_RASA_SERVER_HOST', 'http://127.0.0.1')}:{os.getenv('ABOTKIT_RASA_SERVER_PORT', 5005)}"
+
+    def get_rasa_webhook(self):
+        return f"{self.get_rasa_server_url()}/webhooks/rest/webhook"
 
 
 class IDataHandler(ABC):
@@ -20,8 +68,9 @@ class YAMLDataHandler(IDataHandler):
 
 class RasaAbstraction():
 
-    def __init__(self, data_handler: IDataHandler):
+    def __init__(self, data_handler: IDataHandler, config_handler: IConfigHandler):
         self.data_handler = data_handler
+        self.config_handler = config_handler
 
     def get_intents(self, path: str):
         domain_file = self.data_handler.read_yaml_file(path)

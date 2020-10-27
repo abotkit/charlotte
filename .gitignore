@@ -144,3 +144,6 @@ dmypy.json
 
 # pycharm settings
 .idea
+
+# project specific
+stuff/
