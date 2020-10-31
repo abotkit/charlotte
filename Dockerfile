@@ -3,17 +3,15 @@ FROM python:3.7-slim
 RUN apt-get update -y
 RUN apt-get install -y curl
 
-RUN pip install requests
+COPY requirements.txt /
+RUN pip install -r /requirements.txt
 
-COPY requirements.txt /opt/rasa/requirements.txt
-WORKDIR /opt/rasa
+ARG work_dir=/opt/charlotte
 
-RUN pip install -r requirements.txt
-RUN rasa init --no-prompt
+COPY ./app $work_dir
+RUN mkdir $work_dir/logs
+WORKDIR $work_dir
 
-EXPOSE 5005
-EXPOSE 5055
+EXPOSE 3080
 
-RUN rasa run actions --cors "*" &
-
-ENTRYPOINT ["rasa", "run", "--enable-api", "--cors", "*"]
+ENTRYPOINT gunicorn main:app -b 0.0.0.0:3080 -p charlotte.pid -k uvicorn.workers.UvicornWorker --timeout 120 --workers=1 --access-logfile $work_dir/logs/access.log --log-level DEBUG --log-file $work_dir/logs/app.log
