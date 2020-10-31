@@ -148,3 +148,4 @@ dmypy.json
 # project specific
 stuff/
 app/rasa
+commands.txt
