@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
+import json
+import httpx
 import yaml
 import os
 
-from utilities import helpers
+from app.utilities import helpers
 
 
 class IConfigHandler(ABC):
@@ -74,21 +76,42 @@ class RasaAbstraction():
 
     def get_intents(self, path: str):
         domain_file = self.data_handler.read_yaml_file(path)
-        return domain_file['intents']
+
+        return [{'intents': domain_file['intents']}]
 
     def get_examples(self, path: str):
-        parsed_examples = dict()
+        parsed_examples = list()
         nlu_file = self.data_handler.read_yaml_file(path)
         for intent in nlu_file['nlu']:
-            parsed_examples[intent['intent']] = helpers.parse_intent_examples(intent['examples'])
+            parsed_examples.append(dict(
+                intent=intent['intent'],
+                examples=helpers.parse_intent_examples(intent['examples'])
+            ))
+            # parsed_examples[intent['intent']] = helpers.parse_intent_examples(intent['examples'])
         return parsed_examples
 
     def get_responses(self, path: str):
-        parsed_responses = dict()
+        parsed_responses = list()
         domain_file = self.data_handler.read_yaml_file(path)
         for response, elements in domain_file['responses'].items():
-            parsed_responses[response] = [elem['text'] for elem in elements if 'text' in elem]
-            #parsed_responses[response] = [v for k, v in d.items() if k == 'text' for d in elements]
+            parsed_responses.append(dict(
+                response=response,
+                examples=[elem['text'] for elem in elements if 'text' in elem]
+            ))
+            #parsed_responses[response] = [elem['text'] for elem in elements if 'text' in elem]
+            #print(parsed_responses)
         return parsed_responses
+
+    def get_message(self, data: dict):
+        try:
+
+            r = httpx.post(self.config_handler.get_rasa_webhook(), data=json.dumps(data))
+            if r.status_code == 200:
+                return r.json()
+            else:
+                return None
+        except Exception as e:
+            print(f"Message webhook exception: {str(e)}")
+            return None
 
 
