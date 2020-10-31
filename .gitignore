@@ -1,5 +1,5 @@
 tests/
-rasa/
+app/rasa/
 !.gitignore
 !Dockerfile
 !LICENSE
@@ -147,3 +147,4 @@ dmypy.json
 
 # project specific
 stuff/
+app/rasa
