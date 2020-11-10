@@ -5,12 +5,23 @@ from typing import Optional, List, Dict
 
 
 class IntentsOut(BaseModel):
-    intents: List[str]
+    name: str
+    action: Optional[str]
+
+
+class IntentOut(BaseModel):
+    name: str
+    examples: List[str]
 
 
 class ExamplesOut(BaseModel):
-    intent: str # not working right now
+    intent: str
     examples: List[str]
+
+
+class ExampleIn(BaseModel):
+    example: str
+    intent: str
 
 
 class ResponsesOut(BaseModel):
@@ -33,5 +44,13 @@ class MessageOut(BaseModel):
     text: Optional[str]
     buttons: Optional[List[Buttons]]
     recipient_id: str
+
+
+class TrainStatusOut(BaseModel):
+    done: bool
+
+
+class DeployModelIn(BaseModel):
+    model_path: str
 
 
