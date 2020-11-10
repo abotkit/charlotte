@@ -1,11 +1,11 @@
 import json
-import logging
 import os
 import redis
 
 from persistence.database.idatabase_handler import IMessageHandler
+from utilities import logger_config
 
-logging.basicConfig(level=logging.INFO)
+logger = logger_config.get_logger(__name__)
 
 
 class RedisHandler(IMessageHandler):
@@ -18,11 +18,11 @@ class RedisHandler(IMessageHandler):
 
     def __connected(self):
         self.redis.ping()
-        logging.info("Successfully connected to redis...")
+        logger.info("Successfully connected to redis...")
 
     def get_key(self, key: str, message_type: str = 'json'):
         try:
-            print(f"Redis - getting data from key {self.prefix}_{key}")
+            logger.info(f"Redis - getting data from key {self.prefix}_{key}")
             data = self.redis.get(f"{self.prefix}_{key}")
             if data:
                 if message_type == 'json':
@@ -32,11 +32,11 @@ class RedisHandler(IMessageHandler):
             else:
                 return None
         except Exception as e:
-            print(f"Redis get_message exception: {str(e)}")
+            logger.error(f"Redis get_message exception: {str(e)}")
 
     def get_keys(self, pattern: str, message_type: str = 'json'):
         try:
-            print(f"Redis - getting data from pattern {self.prefix}_{pattern}")
+            logger.info(f"Redis - getting data from pattern {self.prefix}_{pattern}")
             cursor, keys = self.redis.scan(match=f"{self.prefix}_{pattern}")
             data = self.redis.mget(keys)
             if data:
@@ -45,12 +45,12 @@ class RedisHandler(IMessageHandler):
             else:
                 return None
         except Exception as e:
-            print(f"Redis get_keys exception: {str(e)}")
+            logger.error(f"Redis get_keys exception: {str(e)}")
 
     def set_key(self, key: str, data, message_type: str = 'json'):
         success = None
         try:
-            print(f"Redis - Setting data for key {self.prefix}_{key}")
+            logger.info(f"Redis - Setting data for key {self.prefix}_{key}")
             if message_type == 'str':
                 self.redis.set(f"{self.prefix}_{key}", data)
                 success = True
@@ -58,7 +58,7 @@ class RedisHandler(IMessageHandler):
                 self.redis.set(f"{self.prefix}_{key}", json.dumps(data))
                 success = True
         except Exception as e:
-            print(f"Redis send message exception occured: {str(e)}")
+            logger.error(f"Redis send message exception occured: {str(e)}")
             success = False
         finally:
             return success
@@ -76,7 +76,7 @@ class RedisHandler(IMessageHandler):
                 self.redis.publish(channel, data)
             success = True
         except Exception as e:
-            print(f"Redis publish message exception: {str(e)}")
+            logger.error(f"Redis publish message exception: {str(e)}")
         finally:
             return success
 

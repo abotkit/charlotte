@@ -83,13 +83,13 @@ class RasaHandler:
                 if r.json():
                     return r.json()
                 else:
-                    print(r.content)
+                    logger.warning(r.content)
                     return None
             else:
-                print(r.status_code)
+                logger.warning(r.status_code)
                 return None
         except Exception as e:
-            print(f"Message webhook exception: {str(e)}")
+            logger.error(f"Message webhook exception: {str(e)}")
             return None
 
     def train_model(self):
@@ -196,7 +196,7 @@ class RasaHandler:
                             file_content = self.data_handler.read_yaml_file(os.path.join(storage_path, value))
                             self.message_handler.set_key(self.config_handler.get_rasa_domain_file_key(), file_content)
         else:
-            print(f"Bucket '{bucket}' does not exists...")
+            logger.info(f"Bucket '{bucket}' does not exists...")
 
     def get_train_status(self):
         status = self.message_handler.get_key('train_status', message_type='str')
@@ -209,25 +209,24 @@ class RasaHandler:
         self.message_handler.publish_message(self.config_handler.get_redis_model_channel(), model_path)
 
     def handle_deployed_model(self, message):
-        print(f"Handle model: {message}")
         model_path = message['data'].decode('utf-8')
         channel = message['channel'].decode('utf-8')
         if channel == self.config_handler.get_redis_model_channel():
-            print(f"New model deployed from minio '{model_path}'")
+            logger.info(f"New model deployed from minio '{model_path}'")
             local_model_path = os.path.join(self.config_handler.get_storage_path(), model_path)
             if os.path.isfile(local_model_path):
-                print(f"File '{local_model_path}' already exists...")
-                print(f"Restarting server with model stored under: {local_model_path}")
+                logger.info(f"File '{local_model_path}' already exists...")
+                logger.info(f"Restarting server with model stored under: {local_model_path}")
                 self.restart_rasa_server_with_new_model(model_path, local_model_path)
 
             else:
-                print(f"File '{local_model_path}' does not exists yet...")
-                print(f"Download file from minio...")
+                logger.info(f"File '{local_model_path}' does not exists yet...")
+                logger.info(f"Download file from minio...")
                 res = self.object_handler.download_file(self.config_handler.get_bot_name(), model_path,
                                                         self.config_handler.get_storage_path())
                 if res and os.path.isfile(local_model_path):
                     # restart server with model
-                    print(f"Restarting server with model stored under: {local_model_path}")
+                    logger.info(f"Restarting server with model stored under: {local_model_path}")
                     self.restart_rasa_server_with_new_model(model_path, local_model_path)
         # delete all models from local storage except current one
 
@@ -235,7 +234,7 @@ class RasaHandler:
         if self.config_handler.get_redis_model_channel():
             self.loop_thread = self.message_handler.subscribe_channel(self.config_handler.get_redis_model_channel(), self.handle_deployed_model)
         else:
-            print("No channel to listen to...")
+            logger.info("No channel to listen to...")
 
     def restart_rasa_server_with_new_model(self, model_path, local_model_path):
         success = None
@@ -246,7 +245,7 @@ class RasaHandler:
         try:
             r = httpx.put(url, data=json.dumps(data)).status_code
             if r == 204:
-                print(f"Successfully restarted rasa server")
+                logger.info(f"Successfully restarted rasa server")
                 self.message_handler.set_key(self.config_handler.get_server_identifier(), model_path, message_type='str')
                 self.message_handler.set_key(self.config_handler.get_rasa_model_minio_key(), model_path,
                                              message_type='str')
@@ -254,10 +253,10 @@ class RasaHandler:
                                              message_type='str')
                 success = True
             else:
-                print(f"Restarting was not successfull. Ended with status code: {r.status_code}")
+                logger.info(f"Restarting was not successfull. Ended with status code: {r.status_code}")
         except (httpx.ConnectError, httpx.ConnectTimeout) as e:
-            print(f"Couldnt reach rasa server url {url} with new model stored under: {local_model_path}")
-            print(str(e))
+            logger.info(f"Couldnt reach rasa server url {url} with new model stored under: {local_model_path}")
+            logger.info(str(e))
         finally:
             return success
 

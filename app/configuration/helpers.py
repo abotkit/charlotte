@@ -4,7 +4,7 @@ from configobj import ConfigObj
 
 
 def read_config_file(path: str):
-    if path.endswith('.ini') and os.path.isfile(path):
+    if path is not None and path.endswith('.ini') and os.path.isfile(path):
         return ConfigObj(path)
     else:
         return None
