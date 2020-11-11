@@ -181,8 +181,10 @@ def clean():
 @app.get('/rasa-server', status_code=status.HTTP_200_OK)
 def start_rasa_server():
     model_path = message_handler.get_key(config_handler.get_rasa_model_key(), message_type='str')
-    endpoints = os.path.join(config_handler.get_storage_path(), 'endpoints.yml')
+    endpoints = config_handler.get_rasa_endpoints_file()
+    logger.info(f"Getting model from: {model_path}, Endpoints file from: {endpoints}...")
     if config_helpers.is_valid_rasa_folder(endpoints, model_path):
+        logger.info("Starting rasa server...")
         try:
             os.chdir(os.path.join(root, 'rasa'))
             commands = ['rasa', 'run', '--enable-api', '--cors', '"*"', '-p',
