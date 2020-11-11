@@ -52,7 +52,6 @@ def get_default_nlu_file(root):
 
 
 def is_valid_rasa_folder(endpoints, model):
-    print("Model", model)
     if os.path.exists(endpoints) and os.path.exists(model):
         return True
     else:
