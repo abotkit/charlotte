@@ -186,7 +186,6 @@ def start_rasa_server():
     if config_helpers.is_valid_rasa_folder(endpoints, model_path):
         logger.info("Starting rasa server...")
         try:
-            os.chdir(os.path.join(root, 'rasa'))
             commands = ['rasa', 'run', '--enable-api', '--cors', '"*"', '-p',
                         str(config_handler.get_rasa_server_port()),
                         config_handler.get_rasa_server_debug_level(),
@@ -199,7 +198,7 @@ def start_rasa_server():
                 subprocess.Popen(commands, shell=True)
             return 'successfully startet rasa server'
         except Exception as e:
-            print(str(e))  # replace with logger
+            logger.error(str(e))
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='failed to start rasa server')
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='no rasa model trained yet')
@@ -220,7 +219,7 @@ def start_rasa_action_server():
                 subprocess.Popen(commands, shell=True)
             return 'successfully startet rasa action server'
         except Exception as e:
-            print(str(e))  # replace with logger
+            logger.error(str(e))  # replace with logger
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail='failed to start rasa action server')
     else:
