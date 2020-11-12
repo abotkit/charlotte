@@ -152,8 +152,10 @@ def add_examples(examples: models.ExampleIn):
 @app.delete('/example', status_code=status.HTTP_200_OK)
 def delete_examples(examples: models.ExampleIn):
     success = rasa_handler.delete_example(examples.example, examples.intent)
-    if success:
+    if success and success != 0:
         return 'successfully deleted example'
+    elif success == 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"there is no '{examples.example}' in the data")
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='there is no data/nlu.yml file yet')
 
