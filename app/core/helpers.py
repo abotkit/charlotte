@@ -1,3 +1,7 @@
+from utilities import logger_config
+
+logger = logger_config.get_logger(__name__)
+
 def parse_intent_examples_to_list(examples: str):
     return [x.replace("- ", "") for x in examples.splitlines()]
 
@@ -14,7 +18,7 @@ def add_element_to_string(examples: str, example: str):
 
 
 def add_example(data: dict, example: str, intent: str):
-    index = next((index for (index, d) in enumerate(data['nlu']) if d['intent'] == intent), None)
+    index = next((index for (index, d) in enumerate(data['nlu']) if 'intent' in d and d['intent'] == intent), None)
     if index is not None:
         examples = add_element_to_string(data['nlu'][index]['examples'], example)
         data['nlu'][index]['examples'] = examples
@@ -29,32 +33,46 @@ def add_example(data: dict, example: str, intent: str):
 
 
 def delete_example(data: dict, example: str, intent: str):
-    index = next((index for (index, d) in enumerate(data['nlu']) if d['intent'] == intent), None)
+    index = next((index for (index, d) in enumerate(data['nlu']) if 'intent' in d and d['intent'] == intent), None)
     if index is not None:
         examples = parse_intent_examples_to_list(data['nlu'][index]['examples'])
-        examples.remove(example)
+        try:
+            examples.remove(example)
+        except ValueError as e:
+            logger.error(f"Example '{example}' not in data. Ex: {str(e)}")
+            return None
         data['nlu'][index]['examples'] = parse_intent_examples_to_string(examples)
         return data
 
 
 def get_examples(data: dict, intent: str):
     for nlu_intent in data['nlu']:
-        if intent == nlu_intent['intent']:
-            return {'name': intent, 'examples': parse_intent_examples_to_list(nlu_intent['examples'])}
+        if 'intent' in nlu_intent:
+            if intent == nlu_intent['intent']:
+                return {'name': intent, 'examples': parse_intent_examples_to_list(nlu_intent['examples'])}
 
 
 def get_all_examples(data: dict):
     parsed_examples = list()
     for intent in data['nlu']:
-        parsed_examples.append(dict(
-            intent=intent['intent'],
-            examples=parse_intent_examples_to_list(intent['examples'])
-        ))
+        if 'intent' in intent:
+            parsed_examples.append(dict(
+                intent=intent['intent'],
+                examples=parse_intent_examples_to_list(intent['examples'])
+            ))
     return parsed_examples
 
 
 def get_intents(data: dict):
-    return [{'name': intent, 'action': None} for intent in data['intents']]
+    intents = []
+    for intent in data['intents']:
+        if isinstance(intent, dict):
+            intent = list(intent.keys())[0]
+        intents.append({
+            'name': intent,
+            'action': None
+        })
+    return intents
 
 
 def get_responses(data: dict):

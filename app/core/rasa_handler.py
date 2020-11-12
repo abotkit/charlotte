@@ -28,6 +28,7 @@ class RasaHandler:
 
     def get_intents(self):
         domain_file = self.message_handler.get_key(self.config_handler.get_rasa_domain_file_key())
+        print(domain_file)
         if domain_file:
             logger.info("Returning intents")
             return core.helpers.get_intents(domain_file)
@@ -64,8 +65,11 @@ class RasaHandler:
         nlu_file = self.message_handler.get_key(self.config_handler.get_rasa_nlu_file_key())
         if nlu_file:
             nlu_file = core.helpers.delete_example(nlu_file, example, intent)
-            success = self.message_handler.set_key(self.config_handler.get_rasa_nlu_file_key(), nlu_file)
-            return success
+            if nlu_file:
+                success = self.message_handler.set_key(self.config_handler.get_rasa_nlu_file_key(), nlu_file)
+                return success
+            else:
+                return 0
         else:
             return None
 
