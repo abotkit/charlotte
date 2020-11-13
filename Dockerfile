@@ -6,8 +6,8 @@ RUN apt-get install -y curl
 COPY requirements.txt /
 RUN pip install -r /requirements.txt
 
-# RUN python -m spacy download de_core_news_lg
-# RUN python -m spacy link de_core_news_lg de
+RUN python -m spacy download de_core_news_lg
+RUN python -m spacy link de_core_news_lg de
 
 # ARG work_dir=/opt/charlotte
 
