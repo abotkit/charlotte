@@ -54,6 +54,8 @@ def initialize_default_bot(target):
     # set default model path
     if process.returncode == 0:
         rasa_handler.get_init_files_from_disk(root)
+    else:
+        logger.error('default bot initialization failed with error code {}'.format(process.returncode))
 
 
 @app.on_event("startup")
@@ -250,7 +252,6 @@ async def handle(message: models.MessageIn):
         message=message.query,
         sender=message.identifier
     )
-
     response = rasa_handler.get_message(data)
 
     if response:
@@ -297,6 +298,3 @@ def deploy_status():
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='no servers with any deployed models found')
-
-
-

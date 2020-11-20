@@ -13,6 +13,18 @@ uvicorn main:app --reload
 
 # use uvicorn wrapped by gunicorn in production
 gunicorn main:app -b 0.0.0.0:${ABOTKIT_CHARLOTTE_PORT} -k uvicorn.workers.UvicornWorker --timeout 120 --workers=1 --log-level DEBUG
+
+# to deploy and chat with the default bot (use port 8000 in development)
+
+curl localhost:${ABOTKIT_CHARLOTTE_PORT}/init
+curl localhost:${ABOTKIT_CHARLOTTE_PORT}/rasa-start
+
+# for testing
+curl -X POST -H "Content-Type: application/json" -d "{\"query\":\"hi\", \"identifier\":\"unique-char-id\"}" localhost:${ABOTKIT_CHARLOTTE_PORT}/handle       
+
+# should give you something like
+# [{"text":"Hey! How are you?","buttons":null,"recipient_id":"unique-char-id"}]
+
 ```
 
 # Environment variables
