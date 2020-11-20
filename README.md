@@ -8,13 +8,13 @@ pip install -r requirements.txt
 cd app
 export ABOTKIT_CHARLOTTE_PORT=3080 # or any port you want to use
 
-# use hot reload in development and during testing. Testing port is 8000
-uvicorn main:app --reload
+# use hot reload in development and during testing.
+uvicorn main:app --reload --port ${ABOTKIT_CHARLOTTE_PORT}
 
 # use uvicorn wrapped by gunicorn in production
 gunicorn main:app -b 0.0.0.0:${ABOTKIT_CHARLOTTE_PORT} -k uvicorn.workers.UvicornWorker --timeout 120 --workers=1 --log-level DEBUG
 
-# to deploy and chat with the default bot (use port 8000 in development)
+# to deploy and chat with the default bot
 
 curl localhost:${ABOTKIT_CHARLOTTE_PORT}/init
 curl localhost:${ABOTKIT_CHARLOTTE_PORT}/rasa-start
