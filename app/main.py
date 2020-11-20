@@ -2,7 +2,7 @@ import httpx
 import os
 import shutil
 import subprocess
-from fastapi import FastAPI, status, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Response, status, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from dotenv import load_dotenv
@@ -23,7 +23,6 @@ load_dotenv()
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
-
 
 root = os.path.dirname(os.path.abspath(__file__))
 data_handler = YAMLDataHandler()
@@ -73,16 +72,21 @@ def shutdown_event():
     rasa_handler.loop_thread.stop()
 
 
+@app.get("/")
+def entrypoint():
+  return '"When you\'ve reached the top, there\'s only one direction you can go." - Charlotte Hale'
+
+
 @app.get('/alive', status_code=status.HTTP_200_OK)
 def alive():
-    return ''
+    return Response(status_code=status.HTTP_200_OK)
 
 
 @app.get('/rasa-alive', status_code=status.HTTP_200_OK)
 def rasa_server_alive():
     try:
         response = httpx.get(config_handler.get_rasa_server_url())
-        return ''
+        return Response(status_code=status.HTTP_200_OK)
     except httpx.ConnectError as e:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='rasa server not available')
 
@@ -99,7 +103,7 @@ def rasa_action_server_alive():
 @app.get('/init', status_code=status.HTTP_200_OK)
 def init(background_tasks: BackgroundTasks):
     target = config_handler.get_storage_path()
-    if not os.listdir(target):
+    if not os.path.isdir(target):
         os.makedirs(target, exist_ok=True)
         try:
             background_tasks.add_task(initialize_default_bot, target)
