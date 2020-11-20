@@ -117,6 +117,18 @@ def init(background_tasks: BackgroundTasks):
                             detail='a rasa bot already exists. You may need to use the /clean endpoint first.')
 
 
+@app.get('/language')
+def get_language():
+    logger.warning('Not implemented yet')
+    return 'de'
+
+
+@app.post('/language')
+def get_language():
+    logger.warning('Not implemented yet')
+    return Response(status_code=status.HTTP_200_OK)
+
+
 @app.get('/intents', status_code=status.HTTP_200_OK, response_model=List[models.IntentsOut])
 def intents():
     intents = rasa_handler.get_intents() # change to explain intent
