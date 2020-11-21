@@ -11,7 +11,7 @@ class InMemoryMessageHandler(IMessageHandler):
 
     def get_key(self, key: str, message_type: str = 'json'):
         print(f"Get key {key}")
-        return self.db[key]
+        return self.db.get(key, None)
 
     def get_keys(self, pattern: str, message_type: str = 'json'):
         pass
