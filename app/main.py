@@ -60,7 +60,7 @@ def initialize_default_bot(target):
 
 @app.on_event("startup")
 def startup_event():
-    logger.info(f"Starting application under root path '{root}'")
+    logger.info(f"Starting application under root path '{root}'...")
     if config_handler.use_minio():
         rasa_handler.get_init_files_from_object_storage()
     else:
@@ -103,12 +103,22 @@ def rasa_action_server_alive():
 
 
 @app.get('/init', status_code=status.HTTP_200_OK)
-def init(background_tasks: BackgroundTasks):
+def init():
     target = config_handler.get_storage_path()
-    if not os.path.isdir(target):
+    i = 0
+    if os.path.exists(target) and os.path.isdir(target):
+        if not os.listdir(target):
+            i = 1
+            logger.info(f"Folder '{target}' does exists but holds no files. Start initializing rasa bot... ")
+        else:
+            logger.info("a rasa bot already exists. You may need to use the /clean endpoint first.")
+    else:
+        logger.info(f"Target folder '{target}' does not exist. Start initializing rasa bot...")
+        i = 1
         os.makedirs(target, exist_ok=True)
+    if i == 1:
         try:
-            background_tasks.add_task(initialize_default_bot, target)
+            initialize_default_bot(target)
             return 'successfully init an empty rasa bot'
         except Exception as e:
             os.rmdir(target)
