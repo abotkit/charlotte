@@ -60,7 +60,7 @@ def initialize_default_bot(target):
 
 @app.on_event("startup")
 def startup_event():
-    logger.info(f"Starting application under root path '{root}'")
+    logger.info(f"Starting application under root path '{root}'...")
     if config_handler.use_minio():
         rasa_handler.get_init_files_from_object_storage()
     else:
