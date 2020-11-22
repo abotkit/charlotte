@@ -27,24 +27,28 @@ class RasaHandler:
         self.loop_thread = None
 
     def get_intents(self):
-        domain_file = self.message_handler.get_key(self.config_handler.get_rasa_domain_file_key())
-        print(domain_file)
-        if domain_file:
+        nlu_file = self.message_handler.get_key(self.config_handler.get_rasa_nlu_file_key())
+        if nlu_file:
             logger.info("Returning intents")
-            return core.helpers.get_intents(domain_file)
+            return core.helpers.get_intents(nlu_file)
         else:
-            logger.info("No domain.yml found")
+            logger.info("No nlu.yml found")
             return None
 
     def add_example(self, example: str, intent: str):
         nlu_file = self.message_handler.get_key(self.config_handler.get_rasa_nlu_file_key())
-        if nlu_file:
+        domain_file = self.message_handler.get_key(self.config_handler.get_rasa_domain_file_key())
+        if nlu_file and domain_file:
             logger.info(f"Add example '{example}' to intent '{intent}'")
-            nlu_file = core.helpers.add_example(nlu_file, example, intent)
-            success = self.message_handler.set_key(self.config_handler.get_rasa_nlu_file_key(), nlu_file)
-            return success
+            nlu_file, domain_file = core.helpers.add_example(nlu_file, example, intent, domain_file)
+            success_nlu = self.message_handler.set_key(self.config_handler.get_rasa_nlu_file_key(), nlu_file)
+            success_domain = self.message_handler.set_key(self.config_handler.get_rasa_domain_file_key(), domain_file)
+            if success_nlu and success_domain:
+                return True
+            else:
+                return None
         else:
-            logger.info("No nlu.yml found")
+            logger.info("No nlu.yml or domain.yml found")
             return None
 
     def get_examples_for_single_intent(self, intent):

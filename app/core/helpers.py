@@ -17,7 +17,7 @@ def add_element_to_string(examples: str, example: str):
     return joined_str
 
 
-def add_example(data: dict, example: str, intent: str):
+def add_example(data: dict, example: str, intent: str, domain_data: dict):
     index = next((index for (index, d) in enumerate(data['nlu']) if 'intent' in d and d['intent'] == intent), None)
     if index is not None:
         examples = add_element_to_string(data['nlu'][index]['examples'], example)
@@ -29,7 +29,10 @@ def add_example(data: dict, example: str, intent: str):
             'examples': f"- {example}\n"
         })
         data['nlu'] = intents
-    return data
+        domain_intents = domain_data['intents']
+        domain_intents.append(intent)
+        domain_data['intents'] = domain_intents
+    return data, domain_data
 
 
 def delete_example(data: dict, example: str, intent: str):
@@ -64,14 +67,13 @@ def get_all_examples(data: dict):
 
 
 def get_intents(data: dict):
-    intents = []
-    for intent in data['intents']:
-        if isinstance(intent, dict):
-            intent = list(intent.keys())[0]
-        intents.append({
-            'name': intent,
-            'action': None
-        })
+    intents = list()
+    for intent in data['nlu']:
+        if 'intent' in intent:
+            intents.append({
+                'name': intent['intent'],
+                'action': None
+            })
     return intents
 
 
