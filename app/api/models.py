@@ -14,11 +14,6 @@ class IntentOut(BaseModel):
     examples: List[str]
 
 
-class ExamplesOut(BaseModel):
-    intent: str
-    examples: List[str]
-
-
 class ExampleIn(BaseModel):
     example: str
     intent: str

@@ -147,11 +147,11 @@ def intents():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='there is no domain.yml file yet')
 
 
-@app.get('/example/{intent}', status_code=status.HTTP_200_OK, response_model=models.IntentOut)
+@app.get('/intent/examples', status_code=status.HTTP_200_OK, response_model=List[str])
 def get_examples(intent: str):
     examples = rasa_handler.get_examples_for_single_intent(intent)
     if examples:
-        return examples
+        return examples['examples']
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='there is no data/nlu.yml file yet')
 
