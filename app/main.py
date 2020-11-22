@@ -16,7 +16,7 @@ from persistence.database.redis_handler import RedisHandler
 from persistence.files.yaml_handler import YAMLDataHandler
 from persistence.object_storage.minio_handler import MinioHandler
 from persistence.object_storage.inmemory_handler import PlaceholderStorageHandler
-from utilities import logger_config
+from utilities import helpers, logger_config
 
 logger = logger_config.get_logger(__name__)
 load_dotenv()
@@ -60,11 +60,19 @@ def initialize_default_bot(target):
 
 @app.on_event("startup")
 def startup_event():
-    logger.info(f"Starting application under root path '{root}'")
+    logger.info(f"Starting application under root path '{root}'...")
     if config_handler.use_minio():
         rasa_handler.get_init_files_from_object_storage()
+        logger.info("Start rasa server with model loaded from MinIO...")
+        start_rasa_server()
     else:
-        rasa_handler.get_init_files_from_disk(root)
+        target = config_handler.get_storage_path()
+        if not helpers.bot_exists(target):
+            initialize_default_bot(target)
+        rasa_handler.get_init_files_from_disk(target)
+        logger.info("Start rasa server with default rasa bot...")
+        start_rasa_server()
+
     if config_handler.use_redis():
         rasa_handler.listen_to_model_deployment()
 
@@ -103,12 +111,11 @@ def rasa_action_server_alive():
 
 
 @app.get('/init', status_code=status.HTTP_200_OK)
-def init(background_tasks: BackgroundTasks):
+def init():
     target = config_handler.get_storage_path()
-    if not os.path.isdir(target):
-        os.makedirs(target, exist_ok=True)
+    if not helpers.bot_exists(target):
         try:
-            background_tasks.add_task(initialize_default_bot, target)
+            initialize_default_bot(target)
             return 'successfully init an empty rasa bot'
         except Exception as e:
             os.rmdir(target)
