@@ -152,3 +152,4 @@ commands.txt
 .env
 .dockerignore
 app/conf/
+app/customer-repo/

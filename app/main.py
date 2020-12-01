@@ -16,7 +16,7 @@ from persistence.database.redis_handler import RedisHandler
 from persistence.files.yaml_handler import YAMLDataHandler
 from persistence.object_storage.minio_handler import MinioHandler
 from persistence.object_storage.inmemory_handler import PlaceholderStorageHandler
-from utilities import helpers, logger_config
+from utilities import helpers, logger_config, githandler
 
 logger = logger_config.get_logger(__name__)
 load_dotenv()
@@ -27,6 +27,10 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"])
 root = os.path.dirname(os.path.abspath(__file__))
 data_handler = YAMLDataHandler()
 config_handler = ConfigHandler(root=root, config=config_helpers.read_config_file(os.getenv('ABOTKIT_CONFIG_PATH', None)))
+git_handler = githandler.GitHandler(
+    repository_url=config_handler.get_github_connection_url(),
+    repository_path=config_handler.get_github_repo_storage_path()
+)
 
 if config_handler.use_redis():
     message_handler = RedisHandler(config_handler.get_redis_configuration())
@@ -76,9 +80,15 @@ def startup_event():
     if config_handler.use_redis():
         rasa_handler.listen_to_model_deployment()
 
+    if config_handler.use_github():
+        logger.info("Start cloning github repo and install requirements...")
+        git_handler.clone_repository()
+        git_handler.install_requirements()
+
 
 @app.on_event("shutdown")
 def shutdown_event():
+    git_handler.delete_repository()
     rasa_handler.loop_thread.stop()
 
 
@@ -233,9 +243,14 @@ def start_rasa_server():
 
 @app.get('/rasa-action-server', status_code=status.HTTP_200_OK)
 def start_rasa_action_server():
-    if os.listdir(config_handler.get_rasa_action_folder()):
+    if config_handler.use_github():
+        action_folder_path = git_handler.get_actions_folder()
+    else:
+        action_folder_path = config_handler.get_rasa_action_folder()
+    logger.info(f"Starting action server with module under path '{action_folder_path}'")
+    if os.path.isdir(action_folder_path):
         try:
-            os.chdir(config_handler.get_storage_path())
+            os.chdir(action_folder_path)
             commands = ['rasa', 'run', 'actions', '--cors', '"*"', '-p',
                         str(rasa_handler.config_handler.get_rasa_action_server_port()),
                         rasa_handler.config_handler.get_rasa_action_server_debug_level(),

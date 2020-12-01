@@ -37,12 +37,10 @@ class ConfigHandler(IConfigHandler):
             print(f"Configuration error. Check config.ini ... {str(e)}")
 
     def use_redis(self):
-        use_redis = str(os.getenv('ABOTKIT_USE_REDIS', False)).lower() == 'true'
-        return use_redis
+        return str(os.getenv('ABOTKIT_USE_REDIS', False)).lower() == 'true'
 
     def use_minio(self):
-        use_minio = str(os.getenv('ABOTKIT_USE_MINIO', False)).lower() == 'true'
-        return use_minio
+        return str(os.getenv('ABOTKIT_USE_MINIO', False)).lower() == 'true'
 
     def get_rasa_action_folder(self):
         return os.getenv('ABOTKIT_RASA_ACTION_FOLDER', os.path.join(self.root, 'rasa', 'actions'))
@@ -120,3 +118,12 @@ class ConfigHandler(IConfigHandler):
 
     def get_rasa_webhook(self):
         return f"{self.get_rasa_server_url()}/webhooks/rest/webhook"
+
+    def get_github_connection_url(self):
+        return f"https://{os.getenv('ABOTKIT_GITHUB_USER', None)}:{os.getenv('ABOTKIT_GITHUB_PASSWORD', None)}@{os.getenv('ABOTKIT_GITHUB_PROJECT', None)}"
+
+    def get_github_repo_storage_path(self):
+        return os.getenv('ABOTKIT_GITHUB_REPO_PATH', os.path.join(self.root, 'customer-repo'))
+
+    def use_github(self):
+        return str(os.getenv('ABOTKIT_USE_GITHUB', False)).lower() == 'true'
