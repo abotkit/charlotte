@@ -86,10 +86,17 @@ class RasaHandler:
 
     def get_message(self, data: dict):
         try:
-            r = httpx.post(self.config_handler.get_rasa_webhook(), data=json.dumps(data))
+            r = httpx.post(self.config_handler.get_rasa_webhook(), json=data)
             if r.status_code == 200:
                 if r.json():
                     return r.json()
+                elif r.content.decode('utf-8'):
+                    logger.info(f"Seems to be message '{data.get('message')}' is returned with an empty response by rasa")
+                    logger.info(f"Rasa response: {r.content.decode('utf-8')}")
+                    return [{
+                        "recipient_id": data.get('sender'),
+                        "text": ""
+                    }]
                 else:
                     logger.warning(r.content)
                     return None

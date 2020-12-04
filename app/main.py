@@ -65,10 +65,15 @@ def initialize_default_bot(target):
 @app.on_event("startup")
 def startup_event():
     logger.info(f"Starting application under root path '{root}'...")
+    if config_handler.use_github():
+        logger.info("Start cloning github repo and install requirements...")
+        git_handler.clone_repository()
+        git_handler.install_requirements()
     if config_handler.use_minio():
         rasa_handler.get_init_files_from_object_storage()
         logger.info("Start rasa server with model loaded from MinIO...")
         start_rasa_server()
+        start_rasa_action_server()
     else:
         target = config_handler.get_storage_path()
         if not helpers.bot_exists(target):
@@ -76,14 +81,10 @@ def startup_event():
         rasa_handler.get_init_files_from_disk(target)
         logger.info("Start rasa server with default rasa bot...")
         start_rasa_server()
+        start_rasa_action_server()
 
     if config_handler.use_redis():
         rasa_handler.listen_to_model_deployment()
-
-    if config_handler.use_github():
-        logger.info("Start cloning github repo and install requirements...")
-        git_handler.clone_repository()
-        git_handler.install_requirements()
 
 
 @app.on_event("shutdown")
