@@ -126,3 +126,15 @@ class IConfigHandler(ABC):
     @abstractmethod
     def get_config_path(self):
         raise NotImplementedError
+
+    @abstractmethod
+    def get_github_connection_url(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_github_repo_storage_path(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def use_github(self):
+        raise NotImplementedError
