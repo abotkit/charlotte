@@ -82,4 +82,4 @@ class MinioHandler(IObjectStorageHandler):
             objects = self.minio_client.list_objects(bucket_name, recursive=recursive)
             return [obj.object_name for obj in objects]
         except Exception as e:
-            logger.error(f"Minio upload exception occured: {str(e)}")
+            logger.error(f"Minio list exception occured: {str(e)}")
