@@ -1,6 +1,6 @@
 # rasa
-rasa==2.0.3
-spacy==2.3.2
+# rasa==2.0.3
+# spacy==2.3.2
 # numpy==1.19.3
 
 PyYAML==5.3.1
