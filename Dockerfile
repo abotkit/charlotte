@@ -1,12 +1,9 @@
 FROM python:3.7-slim
 
 RUN apt-get update -y
-RUN apt-get install -y curl
+RUN apt-get install -y curl git
 
-RUN pip install --upgrade pip \
-    && pip install rasa==2.0.6 \
-    && pip install spacy==2.3.2 \
-    && pip install numpy==1.19.3
+RUN pip install --upgrade pip
 COPY requirements.txt /
 RUN pip install -r /requirements.txt
 
