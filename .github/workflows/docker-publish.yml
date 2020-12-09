@@ -1,0 +1,28 @@
+name: Docker
+
+on:
+  push:
+    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+env:
+  IMAGE_NAME: charlotte
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build image
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME
+
+      - name: Log into registry
+        run: echo "${{ secrets.JFROG_PASSWORD }}" | docker login abotkit.jfrog.io -u ${{ secrets.JFROG_USER }} --password-stdin
+
+      - name: Push image
+        run: |
+          docker tag charlotte abotkit.jfrog.io/abotkit/charlotte:latest
+          docker push charlotte:latest
