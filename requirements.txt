@@ -1,4 +1,3 @@
-rocketchat_API==1.12.1
 # rasa
 rasa==2.1.3
 spacy==2.3.2
