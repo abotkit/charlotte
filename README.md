@@ -1,3 +1,6 @@
+[![Docker Actions Status](https://github.com/abotkit/charlotte/workflows/Docker/badge.svg)](https://github.com/abotkit/charlotte/actions)
+
+
 # charlotte
 charlotte acts as a layer between rasa and abotkit and allows abotkit to spwan and update bots based on rasa
 
