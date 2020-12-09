@@ -1,6 +1,6 @@
 rocketchat_API==1.12.1
 # rasa
-rasa==2.0.3
+rasa==2.1.3
 spacy==2.3.2
 numpy==1.19.3
 
