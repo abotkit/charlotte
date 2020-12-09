@@ -3,7 +3,6 @@ FROM python:3.7-slim
 RUN apt-get update -y
 RUN apt-get install -y curl git
 
-RUN pip install --upgrade pip
 COPY requirements.txt /
 RUN pip install -r /requirements.txt
 
