@@ -3,8 +3,9 @@ FROM python:3.7-slim
 RUN apt-get update -y
 RUN apt-get install -y curl git
 
-COPY requirements.txt /
-RUN pip install -r /requirements.txt
+COPY requirements.txt /opt/charlotte/requirements.txt
+WORKDIR /opt/charlotte
+RUN pip install -r requirements.txt
 
 RUN python -m spacy download de_core_news_lg
 RUN python -m spacy link de_core_news_lg de
