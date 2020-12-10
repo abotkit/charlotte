@@ -2,12 +2,16 @@ FROM python:3.7-slim
 
 RUN apt-get update -y
 RUN apt-get install -y curl git
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-RUN /bin/bash -c "source /root/.poetry/env"
-COPY requirements.txt /opt/charlotte/requirements.txt
+
+ENV PIP_DISABLE_PIP_VERSION_CHECK=on
+RUN pip install poetry
+
+COPY poetry.lock /opt/charlotte/poetry.lock
+COPY pyproject.toml /opt/charlotte/pyproject.toml
 WORKDIR /opt/charlotte
-RUN poetry init
-RUN for item in $(cat requirements.txt); do   poetry add "${item}"; done
+
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-interaction
 
 RUN python -m spacy download de_core_news_lg
 RUN python -m spacy link de_core_news_lg de
