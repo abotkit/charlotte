@@ -3,7 +3,7 @@ FROM python:3.7-slim
 RUN apt-get update -y
 RUN apt-get install -y curl git
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-
+RUN source /root/.poetry/env
 COPY requirements.txt /opt/charlotte/requirements.txt
 WORKDIR /opt/charlotte
 RUN poetry init
