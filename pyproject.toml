@@ -6,9 +6,8 @@ authors = ["abotkit.io"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = ">=3.6,<3.9"
 spacy = "2.3.2"
-numpy = "1.19.3"
 PyYAML = "5.3.1"
 requests = "2.24.0"
 minio = "6.0.0"
@@ -16,11 +15,11 @@ redis = "3.5.3"
 fastapi = "0.61.1"
 uvicorn = "0.12.2"
 gunicorn = "20.0.4"
-httpx = "0.16.1"
 pydantic = "1.7.1"
 python-dotenv = "0.15.0"
 configobj = "5.0.6"
 GitPython = "3.1.11"
+rasa = "^2.1.3"
 
 [tool.poetry.dev-dependencies]
 
