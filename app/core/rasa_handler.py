@@ -107,6 +107,22 @@ class RasaHandler:
             logger.error(f"Message webhook exception: {str(e)}")
             return None
 
+    def explain(self, data: dict):
+        try:
+            r = httpx.post(self.config_handler.get_rasa_predict_endpoint(data['sender']))
+            if r.status_code == 200:
+                if r.json():
+                    return r.json()
+                else:
+                    logger.warning(r.content)
+                    return None
+            else:
+                logger.warning(r.status_code)
+                return None
+        except Exception as e:
+            logger.error(f"Predict exception: {str(e)}")
+            return None
+
     def train_model(self):
         self.message_handler.set_key('train_status', 'started', message_type='str')
         config_file = self.config_handler.get_rasa_config_file()

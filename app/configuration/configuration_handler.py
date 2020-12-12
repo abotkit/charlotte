@@ -119,6 +119,9 @@ class ConfigHandler(IConfigHandler):
     def get_rasa_webhook(self):
         return f"{self.get_rasa_server_url()}/webhooks/rest/webhook"
 
+    def get_rasa_predict_endpoint(self, sender):
+        return f"{self.get_rasa_server_url()}/conversations/{sender}/predict"
+
     def get_github_connection_url(self):
         return f"https://{os.getenv('ABOTKIT_GITHUB_USER', None)}:{os.getenv('ABOTKIT_GITHUB_PASSWORD', None)}@{os.getenv('ABOTKIT_GITHUB_PROJECT', None)}"
 

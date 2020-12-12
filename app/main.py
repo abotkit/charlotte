@@ -282,6 +282,20 @@ async def handle(message: models.MessageIn):
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='failed to handle message')
 
+@app.post('/explain', status_code=status.HTTP_200_OK)
+async def handle(message: models.MessageIn):
+    data = dict(
+        sender=message.identifier
+    )
+    response = rasa_handler.explain(data)
+
+    if response:
+        return {
+            'score': response['scores'][0]['score'],
+            'intent': response['scores'][0]['action']
+        }
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='failed to handle message')
 
 @app.post('/train', status_code=status.HTTP_200_OK)
 def train_model(background_tasks: BackgroundTasks):
