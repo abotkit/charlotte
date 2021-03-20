@@ -1,7 +1,7 @@
 FROM python:3.7-slim
 
-RUN apt-get update -y
-RUN apt-get install -y curl git
+RUN apt-get update -y \
+    && apt-get install -y curl git
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 RUN pip install poetry

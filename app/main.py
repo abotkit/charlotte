@@ -24,6 +24,7 @@ load_dotenv()
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
 
+logger.info("Initialize basic handlers...")
 root = os.path.dirname(os.path.abspath(__file__))
 data_handler = YAMLDataHandler()
 config_handler = ConfigHandler(root=root, config=config_helpers.read_config_file(os.getenv('ABOTKIT_CONFIG_PATH', None)))
@@ -282,6 +283,7 @@ async def handle(message: models.MessageIn):
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='failed to handle message')
 
+
 @app.post('/explain', status_code=status.HTTP_200_OK)
 async def handle(message: models.MessageIn):
     data = dict(
@@ -296,6 +298,7 @@ async def handle(message: models.MessageIn):
         }
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='failed to handle message')
+
 
 @app.post('/train', status_code=status.HTTP_200_OK)
 def train_model(background_tasks: BackgroundTasks):
